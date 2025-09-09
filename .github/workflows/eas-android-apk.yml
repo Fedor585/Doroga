@@ -1,10 +1,9 @@
-
 name: EAS Android APK
 
 on:
-  workflow_dispatch:      # запуск вручную
+  workflow_dispatch:
   push:
-    branches: [ main ]    # запуск при пуше в main
+    branches: [ main ]
 
 jobs:
   build-android:
@@ -16,12 +15,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install deps
         run: |
-          if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
-          else npm install; fi
+          if [ -f yarn.lock ]; then yarn install --frozen-lockfile; else npm ci || npm i; fi
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
@@ -30,10 +28,17 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Who am I
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: npx eas-cli whoami
 
       - name: Start cloud build (APK)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: npx eas-cli build --platform android --profile apk --non-interactive --no-wait
 
       - name: Show last build link
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: npx eas-cli build:list --platform android --limit 1
+
